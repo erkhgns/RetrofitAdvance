@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
@@ -141,5 +143,15 @@ public interface IApi {
     Call<List<Post>> getPostUsingUrl(@Url String url);
 
 
-
+    /**
+     * @Post annotation - sends data to web
+     *
+     * @Body annotation -The object will be serialized using
+     * the Retrofit instance Converter
+     * and the result will be set directly as the request body (Object - JSON)
+     * @param post
+     * @return
+     */
+    @POST("posts")
+    Call<Post> createPost(@Body Post post);
 }

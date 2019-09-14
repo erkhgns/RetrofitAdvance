@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         api = retrofit.create(IApi.class);
 
 
-        getPostUsingMap();
+      createPost();
     }
 
     /**
@@ -347,6 +347,8 @@ public class MainActivity extends AppCompatActivity {
          *
          * Note: You can also add the base url in the String.
          * Retrofit will automatically  substitute the base URL
+         *
+         * Retrofit will ignore the values if fields are null
          */
         //whole url passed
         //Call<List<Post>> getAllPost = api.getPostUsingUrl("http://jsonplaceholder.typicode.com/posts/1");
@@ -386,6 +388,51 @@ public class MainActivity extends AppCompatActivity {
                 textView.setText(t.getMessage());
             }
         });
+    }
+
+
+
+    public void createPost(){
+        Post post = new Post(1,"Erick","Sample message");
+
+        /**
+         * Sending data to API
+         */
+        Call<Post> createPost = api.createPost(post);
+
+        createPost.enqueue(new Callback<Post>() {
+            @Override
+            public void onResponse(Call<Post> call, Response<Post> response) {
+                if(!response.isSuccessful()){
+                    textView.setText(response.message());
+                    return;
+                }
+
+                Post post = response.body();
+                String content = "";
+
+                /**
+                 * response.code returns the
+                 * http code status of the request
+                 */
+                content+= "Code :" +response.code() +"\n";
+                content+= "userId :" +post.getUserId() +"\n";
+                content+= "Id :" +post.getId() +"\n";
+                content+= "Title :" +post.getTitle() +"\n";
+                content+= "Message :" +post.getText() +"\n\n";
+
+                textView.setText(content);
+
+
+            }
+
+            @Override
+            public void onFailure(Call<Post> call, Throwable t) {
+                textView.setText(t.getMessage());
+            }
+        });
+
+
     }
 
 
