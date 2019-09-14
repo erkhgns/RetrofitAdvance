@@ -5,11 +5,14 @@ import com.erkhgns.retrofitadvance.Model.Comment;
 import com.erkhgns.retrofitadvance.Model.Post;
 
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.QueryMap;
+import retrofit2.http.Url;
 
 public interface IApi {
 
@@ -83,4 +86,60 @@ public interface IApi {
             @Query("userId") int userId,
             @Query("_sort") String sort,
             @Query("_order") String order);
+
+
+    /**
+     * Almost the same as the function above.
+     * The only difference is it passes 2 user id
+     * so will return 2 user ID
+     */
+    @GET("posts")
+    Call<List<Post>> getSortedPostWith2Id(
+            @Query("userId") int userId,
+            @Query("_sort") String sort,
+            @Query("_order") String order);
+
+
+    /**
+     * Almost the same as the function above.
+     * The only difference is it has a parameter of
+     * list
+     * @param userId
+     * @param sort
+     * @param order
+     * @return
+     */
+    @GET("posts")
+    Call<List<Post>> getSortedPostWithListParameter(
+            @Query("userId") Integer [] userId,
+            @Query("_sort") String sort,
+            @Query("_order") String order);
+
+
+    /**
+     * Query map is the most flexible annotations for me
+     * It has parameters of map of String
+     * The first String is the name of the parameter
+     * The second String is the value of the parameter
+     *
+     * @param parameters
+     * @return
+     */
+    @GET("posts")
+    Call<List<Post>> getPostUsingMap(@QueryMap Map<String, String> parameters);
+
+
+    /**
+     * @URL annotation does
+     * it requires the actual url of the API
+     *
+     * This is advisable when the query or path is very complicated
+     * @param url
+     * @return
+     */
+    @GET
+    Call<List<Post>> getPostUsingUrl(@Url String url);
+
+
+
 }
