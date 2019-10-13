@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import com.erkhgns.retrofitadvance.Model.Comment;
 import com.erkhgns.retrofitadvance.Model.Post;
+import com.google.gson.GsonBuilder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         api = retrofit.create(IApi.class);
 
 
-      createPost();
+      deletePost();
     }
 
     /**
@@ -435,6 +436,217 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    public void createPostUsingFormUrlEncoded(){
+
+        /**
+         * Inserting data to web service using Form URL encoded
+         */
+        Call<Post> createPost = api.createPostUsingFormUrl(1,"Tittleeeee","Messageeee");
+
+        createPost.enqueue(new Callback<Post>() {
+            @Override
+            public void onResponse(Call<Post> call, Response<Post> response) {
+                if(!response.isSuccessful()){
+                    textView.setText(response.message());
+                    return;
+                }
+
+                Post post = response.body();
+                String content = "";
+
+                /**
+                 * response.code returns the
+                 * http code status of the request
+                 */
+                content+= "Code :" +response.code() +"\n";
+                content+= "userId :" +post.getUserId() +"\n";
+                content+= "Id :" +post.getId() +"\n";
+                content+= "Title :" +post.getTitle() +"\n";
+                content+= "Message :" +post.getText() +"\n\n";
+
+                textView.setText(content);
+
+
+            }
+
+            @Override
+            public void onFailure(Call<Post> call, Throwable t) {
+                textView.setText(t.getMessage());
+            }
+        });
+    }
+
+
+    public void createPostUsingFormMap(){
+        Map<String, String> map = new HashMap<>();
+
+        /**
+         * Notice if other fields in json dont send in API, it will return a null value
+         */
+        map.put("userId","99");
+        map.put("title","heyy");
+        Call<Post> createPost = api.createPostUsingFormUrlMap(map);
+
+        createPost.enqueue(new Callback<Post>() {
+            @Override
+            public void onResponse(Call<Post> call, Response<Post> response) {
+                if(!response.isSuccessful()){
+                    textView.setText(response.message());
+                    return;
+                }
+
+                Post post = response.body();
+                String content = "";
+
+                /**
+                 * response.code returns the
+                 * http code status of the request
+                 */
+                content+= "Code :" +response.code() +"\n";
+                content+= "userId :" +post.getUserId() +"\n";
+                content+= "Id :" +post.getId() +"\n";
+                content+= "Title :" +post.getTitle() +"\n";
+                content+= "Message :" +post.getText() +"\n\n";
+
+                textView.setText(content);
+
+
+            }
+
+            @Override
+            public void onFailure(Call<Post> call, Throwable t) {
+                textView.setText(t.getMessage());
+            }
+        });
+    }
+
+    private void updatePostUsingPut(){
+
+
+        /**
+         * If we send null value to the API using @PUT annotation
+         * It will update the API as null because it replaces one whole object (row)
+         */
+        Post post = new Post(12,null, "Sample text");
+
+        Call<Post> updatePost = api.putPost(5,post);
+
+
+        updatePost.enqueue(new Callback<Post>() {
+            @Override
+            public void onResponse(Call<Post> call, Response<Post> response) {
+                if(!response.isSuccessful()){
+                    textView.setText(response.message());
+                    return;
+                }
+
+                Post post = response.body();
+                String content = "";
+
+                /**
+                 * response.code returns the
+                 * http code status of the request
+                 */
+                content+= "Code :" +response.code() +"\n";
+                content+= "userId :" +post.getUserId() +"\n";
+                content+= "Id :" +post.getId() +"\n";
+                content+= "Title :" +post.getTitle() +"\n";
+                content+= "Message :" +post.getText() +"\n\n";
+
+                textView.setText(content);
+            }
+
+            @Override
+            public void onFailure(Call<Post> call, Throwable t) {
+                textView.setText(t.getMessage());
+
+            }
+        });
+    }
+
+
+
+    private void updatePostUsingPatch(){
+
+
+        /**
+         * If we send null value to the API using @PATCH annotation
+         * It will ignore null value and will
+         * only update data we send that is not null
+         */
+        /**
+         * If we want to force update fields as null using @Patch annotation,
+         * we have to create the instance of retrofit like this
+         *
+         *
+         * Create instance of Gson Class that serializes nulls
+         * and pass it on the creation of instance of retrofit
+         *
+         * Gson gson = new GsonBuilder().serializeNulls().create();
+         *
+         * retrofit = new Retrofit.Builder()
+         *                 .baseUrl("http://jsonplaceholder.typicode.com/")
+         *                 .addConverterFactory(GsonConverterFactory.create(gson))
+         *                 .build();
+         */
+        Post post = new Post(12,null, "Sample text");
+
+        Call<Post> updatePost = api.patchPost(5,post);
+
+
+        updatePost.enqueue(new Callback<Post>() {
+            @Override
+            public void onResponse(Call<Post> call, Response<Post> response) {
+                if(!response.isSuccessful()){
+                    textView.setText(response.message());
+                    return;
+                }
+
+                Post post = response.body();
+                String content = "";
+
+                /**
+                 * response.code returns the
+                 * http code status of the request
+                 */
+                content+= "Code :" +response.code() +"\n";
+                content+= "userId :" +post.getUserId() +"\n";
+                content+= "Id :" +post.getId() +"\n";
+                content+= "Title :" +post.getTitle() +"\n";
+                content+= "Message :" +post.getText() +"\n\n";
+
+                textView.setText(content);
+            }
+
+            @Override
+            public void onFailure(Call<Post> call, Throwable t) {
+                textView.setText(t.getMessage());
+
+            }
+        });
+    }
+
+    /**
+     * Request to delete data in API
+     */
+    private void deletePost(){
+
+        Call<Void> deletePost = api.deletePost(5);
+
+        deletePost.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                textView.setText("Code: " +response.code());
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                textView.setText(t.getMessage());
+
+            }
+        });
+    }
 
 }
 

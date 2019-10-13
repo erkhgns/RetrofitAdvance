@@ -9,8 +9,14 @@ import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FieldMap;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
@@ -154,4 +160,79 @@ public interface IApi {
      */
     @POST("posts")
     Call<Post> createPost(@Body Post post);
+
+
+    /**
+     * Another way of sending data to web services
+     * Instead of sending it by object, it sends
+     * by defining each parameter.
+     *
+     * String inside the annotation of @Field should match on the
+     * parameter name.
+     *
+     *
+     * Actual parameter userId=23&title=New%20Title&body=New%20Text
+     *
+     * %20 removes spaces and special character
+     * @param userId
+     * @param title
+     * @param text
+     * @return
+     */
+    @FormUrlEncoded
+    @POST("posts")
+    Call<Post> createPostUsingFormUrl(@Field("userId") int userId,
+                                      @Field("title") String title,
+                                      @Field("body") String text);
+
+
+    /**
+     * Sending data to API in FormUrlEncoded passing the parameter as map
+     *
+     * Cons: You can't pass a list value
+     * @param map
+     * @return
+     */
+    @FormUrlEncoded
+    @POST("posts")
+    Call<Post> createPostUsingFormUrlMap(@FieldMap Map<String, String> map);
+
+
+    /**
+     * PUT & PATCH Annotation
+     * is used for update in web services
+     *
+     * PUT - Completely replace a row of data send to API
+     *
+     * PATCH - Will only replace data we send in a row
+     *
+     *
+     * PUT,PATCH & Delete is applied only for single item
+     *
+     */
+
+
+    /**
+     * Body contains the data will send to the API
+     *
+     * @param id
+     * @param post
+     * @return
+     */
+    @PUT("posts/{id}")
+    Call<Post> putPost(@Path("id")int id,@Body Post post);
+
+    @PATCH("posts/{id}")
+    Call<Post> patchPost(@Path("id")int id,@Body Post post);
+
+
+    /**
+     * Request to delete one object in API
+     * it returns nothing accdg to the dummy API
+     * so it returns void
+     * @param id
+     * @return
+     */
+    @DELETE("posts/{id}")
+    Call<Void> deletePost(@Path("id") int id);
 }
