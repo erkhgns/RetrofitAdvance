@@ -9,10 +9,17 @@ import com.erkhgns.retrofitadvance.Model.Comment;
 import com.erkhgns.retrofitadvance.Model.Post;
 import com.google.gson.GsonBuilder;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -25,12 +32,61 @@ public class MainActivity extends AppCompatActivity {
     Retrofit retrofit;
     IApi api;
 
+    HttpLoggingInterceptor loggingInterceptor;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         textView = findViewById(R.id.textView);
+
+
+        loggingInterceptor = new HttpLoggingInterceptor();
+
+        //setting up the level of the logs we are able to see.
+        //body is the most common one
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        /**
+         * To see the actual HTTP request we made on server, use OKHTTP-logging interceptor.
+         * For Logging of HTTP request.
+         *
+         * the instance of this library will be added on retrofit as Client.
+         *
+         *
+         * Headers contains meta data of each response made on HTTP request.
+         *    to add headers, put Annotations '@Headers' on API interface of retrofit.
+         *    Or it can also pass it on the parameter using  Header annotation
+         *
+         * To add default header in each retrofit instance, add interceptor in OKHTTPClient. (First Interceptor)
+         */
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(new Interceptor() {
+                    @NotNull
+                    @Override
+                    public okhttp3.Response intercept(@NotNull Chain chain) throws IOException {
+                        //In this method, we can get our current HTTP request from Chain variable.
+
+                        Request originalRequest = chain.request();
+
+                        //We can't make changes on originalRequest so we copy it and create a new one
+
+
+                        //adding default header on each retrofit client
+                        //No spaces are allowed in header
+                        Request newRequest = originalRequest.newBuilder()
+                                .addHeader("CurrentApi","JSONPlace")
+                                .build();
+
+
+
+                        return chain.proceed(newRequest);
+                    }
+                })
+                .addInterceptor(loggingInterceptor)
+                .build();
+
 
         // TODO: 9/12/19 Don't forget to Add Internet Permissions in Manifest.
         /**
@@ -43,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
         retrofit = new Retrofit.Builder()
                 .baseUrl("http://jsonplaceholder.typicode.com/")
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
                 .build();
 
         /**
@@ -51,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         api = retrofit.create(IApi.class);
 
 
-      deletePost();
+       deletePost();
     }
 
     /**
@@ -288,18 +345,18 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void getPostUsingMap() {
-         Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
 
-         /**
-          *
-          * Put the parameters in MAP
-          * 1st String  - Parameter Name
-          * 2nd String - value of the parameter
-          *
-          */
+        /**
+         *
+         * Put the parameters in MAP
+         * 1st String  - Parameter Name
+         * 2nd String - value of the parameter
+         *
+         */
         map.put("userId", "1");
-        map.put("_sort","id");
-        map.put("_order","desc");
+        map.put("_sort", "id");
+        map.put("_order", "desc");
 
 
         Call<List<Post>> getAllPost = api.getPostUsingMap(map);
@@ -315,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
 
                 List<Post> listOfPost = response.body();
 
-                if(listOfPost!=null){
+                if (listOfPost != null) {
                     for (Post post : listOfPost) {
                         String content = "";
 
@@ -330,7 +387,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-
             }
 
             @Override
@@ -341,7 +397,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void getPostUsingActualUrl(){
+    public void getPostUsingActualUrl() {
 
         /**
          * It passes the actual end point of the API
@@ -366,7 +422,7 @@ public class MainActivity extends AppCompatActivity {
 
                 List<Post> listOfPost = response.body();
 
-                if(listOfPost!=null){
+                if (listOfPost != null) {
                     for (Post post : listOfPost) {
                         String content = "";
 
@@ -381,7 +437,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-
             }
 
             @Override
@@ -392,9 +447,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    public void createPost(){
-        Post post = new Post(1,"Erick","Sample message");
+    public void createPost() {
+        Post post = new Post(1, "Erick", "Sample message");
 
         /**
          * Sending data to API
@@ -404,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
         createPost.enqueue(new Callback<Post>() {
             @Override
             public void onResponse(Call<Post> call, Response<Post> response) {
-                if(!response.isSuccessful()){
+                if (!response.isSuccessful()) {
                     textView.setText(response.message());
                     return;
                 }
@@ -416,11 +470,11 @@ public class MainActivity extends AppCompatActivity {
                  * response.code returns the
                  * http code status of the request
                  */
-                content+= "Code :" +response.code() +"\n";
-                content+= "userId :" +post.getUserId() +"\n";
-                content+= "Id :" +post.getId() +"\n";
-                content+= "Title :" +post.getTitle() +"\n";
-                content+= "Message :" +post.getText() +"\n\n";
+                content += "Code :" + response.code() + "\n";
+                content += "userId :" + post.getUserId() + "\n";
+                content += "Id :" + post.getId() + "\n";
+                content += "Title :" + post.getTitle() + "\n";
+                content += "Message :" + post.getText() + "\n\n";
 
                 textView.setText(content);
 
@@ -437,17 +491,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void createPostUsingFormUrlEncoded(){
+    public void createPostUsingFormUrlEncoded() {
 
         /**
          * Inserting data to web service using Form URL encoded
          */
-        Call<Post> createPost = api.createPostUsingFormUrl(1,"Tittleeeee","Messageeee");
+        Call<Post> createPost = api.createPostUsingFormUrl(1, "Tittleeeee", "Messageeee");
 
         createPost.enqueue(new Callback<Post>() {
             @Override
             public void onResponse(Call<Post> call, Response<Post> response) {
-                if(!response.isSuccessful()){
+                if (!response.isSuccessful()) {
                     textView.setText(response.message());
                     return;
                 }
@@ -459,11 +513,11 @@ public class MainActivity extends AppCompatActivity {
                  * response.code returns the
                  * http code status of the request
                  */
-                content+= "Code :" +response.code() +"\n";
-                content+= "userId :" +post.getUserId() +"\n";
-                content+= "Id :" +post.getId() +"\n";
-                content+= "Title :" +post.getTitle() +"\n";
-                content+= "Message :" +post.getText() +"\n\n";
+                content += "Code :" + response.code() + "\n";
+                content += "userId :" + post.getUserId() + "\n";
+                content += "Id :" + post.getId() + "\n";
+                content += "Title :" + post.getTitle() + "\n";
+                content += "Message :" + post.getText() + "\n\n";
 
                 textView.setText(content);
 
@@ -478,20 +532,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void createPostUsingFormMap(){
+    public void createPostUsingFormMap() {
         Map<String, String> map = new HashMap<>();
 
         /**
          * Notice if other fields in json dont send in API, it will return a null value
          */
-        map.put("userId","99");
-        map.put("title","heyy");
+        map.put("userId", "99");
+        map.put("title", "heyy");
         Call<Post> createPost = api.createPostUsingFormUrlMap(map);
 
         createPost.enqueue(new Callback<Post>() {
             @Override
             public void onResponse(Call<Post> call, Response<Post> response) {
-                if(!response.isSuccessful()){
+                if (!response.isSuccessful()) {
                     textView.setText(response.message());
                     return;
                 }
@@ -503,11 +557,11 @@ public class MainActivity extends AppCompatActivity {
                  * response.code returns the
                  * http code status of the request
                  */
-                content+= "Code :" +response.code() +"\n";
-                content+= "userId :" +post.getUserId() +"\n";
-                content+= "Id :" +post.getId() +"\n";
-                content+= "Title :" +post.getTitle() +"\n";
-                content+= "Message :" +post.getText() +"\n\n";
+                content += "Code :" + response.code() + "\n";
+                content += "userId :" + post.getUserId() + "\n";
+                content += "Id :" + post.getId() + "\n";
+                content += "Title :" + post.getTitle() + "\n";
+                content += "Message :" + post.getText() + "\n\n";
 
                 textView.setText(content);
 
@@ -521,22 +575,27 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void updatePostUsingPut(){
+    private void updatePostUsingPut() {
 
-
+        /**
+         * Add Dynamic headers using MAP
+         */
+        Map<String, String> headers = new HashMap<>();
+        headers.put("header1","1");
+        headers.put("header2","2");
         /**
          * If we send null value to the API using @PUT annotation
          * It will update the API as null because it replaces one whole object (row)
          */
-        Post post = new Post(12,null, "Sample text");
+        Post post = new Post(12, null, "Sample text");
 
-        Call<Post> updatePost = api.putPost(5,post);
+        Call<Post> updatePost = api.putPost(headers, 5, post);
 
 
         updatePost.enqueue(new Callback<Post>() {
             @Override
             public void onResponse(Call<Post> call, Response<Post> response) {
-                if(!response.isSuccessful()){
+                if (!response.isSuccessful()) {
                     textView.setText(response.message());
                     return;
                 }
@@ -548,11 +607,11 @@ public class MainActivity extends AppCompatActivity {
                  * response.code returns the
                  * http code status of the request
                  */
-                content+= "Code :" +response.code() +"\n";
-                content+= "userId :" +post.getUserId() +"\n";
-                content+= "Id :" +post.getId() +"\n";
-                content+= "Title :" +post.getTitle() +"\n";
-                content+= "Message :" +post.getText() +"\n\n";
+                content += "Code :" + response.code() + "\n";
+                content += "userId :" + post.getUserId() + "\n";
+                content += "Id :" + post.getId() + "\n";
+                content += "Title :" + post.getTitle() + "\n";
+                content += "Message :" + post.getText() + "\n\n";
 
                 textView.setText(content);
             }
@@ -566,8 +625,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    private void updatePostUsingPatch(){
+    private void updatePostUsingPatch() {
 
 
         /**
@@ -590,15 +648,15 @@ public class MainActivity extends AppCompatActivity {
          *                 .addConverterFactory(GsonConverterFactory.create(gson))
          *                 .build();
          */
-        Post post = new Post(12,null, "Sample text");
+        Post post = new Post(12, null, "Sample text");
 
-        Call<Post> updatePost = api.patchPost(5,post);
+        Call<Post> updatePost = api.patchPost("samplee",5, post);
 
 
         updatePost.enqueue(new Callback<Post>() {
             @Override
             public void onResponse(Call<Post> call, Response<Post> response) {
-                if(!response.isSuccessful()){
+                if (!response.isSuccessful()) {
                     textView.setText(response.message());
                     return;
                 }
@@ -610,11 +668,11 @@ public class MainActivity extends AppCompatActivity {
                  * response.code returns the
                  * http code status of the request
                  */
-                content+= "Code :" +response.code() +"\n";
-                content+= "userId :" +post.getUserId() +"\n";
-                content+= "Id :" +post.getId() +"\n";
-                content+= "Title :" +post.getTitle() +"\n";
-                content+= "Message :" +post.getText() +"\n\n";
+                content += "Code :" + response.code() + "\n";
+                content += "userId :" + post.getUserId() + "\n";
+                content += "Id :" + post.getId() + "\n";
+                content += "Title :" + post.getTitle() + "\n";
+                content += "Message :" + post.getText() + "\n\n";
 
                 textView.setText(content);
             }
@@ -630,14 +688,14 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Request to delete data in API
      */
-    private void deletePost(){
+    private void deletePost() {
 
         Call<Void> deletePost = api.deletePost(5);
 
         deletePost.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                textView.setText("Code: " +response.code());
+                textView.setText("Code: " + response.code());
             }
 
             @Override

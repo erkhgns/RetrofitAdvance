@@ -14,6 +14,9 @@ import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.HeaderMap;
+import retrofit2.http.Headers;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -215,15 +218,27 @@ public interface IApi {
     /**
      * Body contains the data will send to the API
      *
+     * Headers pass on MAP - for more dynamic adding of headers
      * @param id
      * @param post
      * @return
      */
     @PUT("posts/{id}")
-    Call<Post> putPost(@Path("id")int id,@Body Post post);
+    Call<Post> putPost(@HeaderMap Map<String, String> headers ,
+                       @Path("id")int id,
+                       @Body Post post);
 
+    /**
+     * Add headers for logging interceptor. It can be single String or Array of String
+     * Static Header - headers put annotation statically
+     * Dynamic Header - headers that passed on parameter of the body
+     * @param id
+     * @param post
+     * @return
+     */
+    @Headers("Static-Header: 123")
     @PATCH("posts/{id}")
-    Call<Post> patchPost(@Path("id")int id,@Body Post post);
+    Call<Post> patchPost(@Header("headers") String header , @Path("id")int id, @Body Post post);
 
 
     /**
